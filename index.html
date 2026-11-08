@@ -36,7 +36,7 @@
           <i data-lucide="smartphone" class="w-6 h-6"></i>
         </div>
         <div>
-          <span id="nav-store-name" class="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">Лейм</span>
+          <span id="nav-store-name" class="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">Кварц</span>
           <span class="text-xs text-slate-400 font-medium">Онлайн-магазин</span>
         </div>
       </div>
@@ -88,7 +88,7 @@
       <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl">
         <div class="relative z-10 max-w-2xl space-y-4">
           <span class="bg-indigo-500/30 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-400/30">Официальный магазин</span>
-          <h1 id="hero-store-name" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Лейм</h1>
+          <h1 id="hero-store-name" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Кварц</h1>
           <p id="hero-store-desc" class="text-slate-300 text-sm sm:text-base leading-relaxed">Оригинальные смартфоны и гаджеты по лучшим ценам с гарантией качества.</p>
           
           <!-- Search Bar -->
@@ -276,7 +276,7 @@
               
               <div class="text-sm text-slate-600 space-y-1">
                 <p><strong>Текущий статус:</strong> <span id="admin-status-text" class="text-emerald-600 font-semibold">Не авторизован</span></p>
-                <p><strong>Email:</strong> <span id="admin-email-text">admin@leim.kg</span></p>
+                <p><strong>Email:</strong> <span id="admin-email-text">admin@kvars.kg</span></p>
                 <p><strong>Роль:</strong> Administrator (Full Access)</p>
               </div>
 
@@ -322,20 +322,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Функция проверки прав администратора
     function isAdmin() {
       return request.auth != null && request.auth.token.admin == true;
     }
 
+    // Правила для коллекции товаров
     match /products/{productId} {
+      // Публичный доступ на чтение всем пользователям
       allow read: if true;
+      // Создавать, изменять и удалять товары может ТОЛЬКО админ
       allow write, update, delete: if isAdmin();
     }
 
+    // Правила для заказов
     match /orders/{orderId} {
+      // Создать заказ может любой клиент
       allow create: if true;
+      // Читать и управлять заказами может только админ
       allow read, update, delete: if isAdmin();
     }
 
+    // Правила для настроек магазина
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -366,7 +374,7 @@ service cloud.firestore {
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Email администратора</label>
-          <input type="email" id="login-email" value="admin@leim.kg" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <input type="email" id="login-email" value="admin@kvars.kg" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
 
         <div>
@@ -378,15 +386,5 @@ service cloud.firestore {
           Войти в панель
         </button>
       </form>
-    </div>
-  </div>
 
-  <script>
-    lucide.createIcons();
-
-    function switchTab(tab) {
-      document.getElementById('view-store').classList.add('hidden');
-      document.getElementById('view-admin').classList.add('hidden');
-      document.getElementById('view-security').classList.add('hidden');
-      
-      document.getElementById('nav-tab-store').className = "py-3 font-semibold text-sm border-b-2 bo
+      <div class="bg-slate-50 p-3 rou
