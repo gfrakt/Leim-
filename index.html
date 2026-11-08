@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кварц — Интернет-магазин & Админ-панель</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Logo & Store Name -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('store')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i data-lucide="smartphone" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span id="nav-store-name" class="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">Кварц</span>
+          <span class="text-xs text-slate-400 font-medium">Онлайн-магазин</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Cart Button -->
+        <button onclick="toggleCart()" class="relative p-2.5 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition flex items-center gap-2">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span class="hidden sm:inline text-sm font-semibold">Корзина</span>
+          <span id="cart-badge" class="hidden absolute -top-1 -right-1 bg-indigo-600 text-white text-xs w-5 h-5 rounded-full items-center justify-center font-bold">0</span>
+        </button>
+
+        <!-- Admin / Login Button -->
+        <div id="auth-nav-container">
+          <button onclick="openAuthModal()" class="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition shadow-sm">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Вход админа</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Navigation Bar Tabs -->
+  <div class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8">
+      <button id="nav-tab-store" onclick="switchTab('store')" class="py-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
+        <i data-lucide="store" class="w-4 h-4"></i> Витрина
+      </button>
+      <button id="nav-tab-admin" onclick="switchTab('admin')" class="py-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 relative">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Админ-панель
+        <span id="admin-lock-badge" class="bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-mono uppercase">Защищено</span>
+      </button>
+      <button id="nav-tab-security" onclick="switchTab('security')" class="py-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-4 h-4"></i> Firebase Rules
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- STORE FRONT VIEW -->
+    <div id="view-store" class="space-y-8">
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl">
+        <div class="relative z-10 max-w-2xl space-y-4">
+          <span class="bg-indigo-500/30 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-400/30">Официальный магазин</span>
+          <h1 id="hero-store-name" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Кварц</h1>
+          <p id="hero-store-desc" class="text-slate-300 text-sm sm:text-base leading-relaxed">Оригинальные смартфоны и гаджеты по лучшим ценам с гарантией качества.</p>
+          
+          <div class="pt-4 flex items-center max-w-md">
+            <div class="relative w-full">
+              <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400"></i>
+              <input type="text" id="search-input" oninput="renderProducts()" placeholder="Поиск смартфона..." class="w-full bg-slate-800/80 border border-slate-700 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide" id="categories-filter"></div>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-slate-900">Каталог товаров</h2>
+          <span id="products-count-badge" class="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">0 товаров</span>
+        </div>
+
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL VIEW -->
+    <div id="view-admin" class="hidden space-y-8">
+      <div id="admin-logged-out-banner" class="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-4 text-amber-900 shadow-sm">
+        <div class="p-3 bg-amber-100 rounded-xl">
+          <i data-lucide="shield-alert" class="w-6 h-6 text-amber-700"></i>
+        </div>
+        <div class="space-y-2">
+          <h3 class="font-bold text-lg">Требуется авторизация администратора</h3>
+          <p class="text-sm text-amber-800">Вы просматриваете админ-панель в режиме «Только чтение». Чтобы добавлять, редактировать товары или менять настройки магазина, войдите под аккаунтом администратора через Firebase Auth.</p>
+          <button onclick="openAuthModal()" class="inline-flex items-center gap-2 bg-amber-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-800 transition">
+            <i data-lucide="log-in" class="w-4 h-4"></i> Войти в аккаунт
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Панель управления</h1>
+          <p class="text-sm text-slate-500">Управление товарами, категориями, заказами и параметрами магазина в облаке Firebase.</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="openAddProductModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-md shadow-indigo-100">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Добавить товар
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <i data-lucide="box" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-slate-900" id="stat-products-count">0</div>
+            <div class="text-xs text-slate-500 font-medium">Товаров в базе</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <i data-lucide="tags" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-slate-900" id="stat-categories-count">0</div>
+            <div class="text-xs text-slate-500 font-medium">Категорий</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-slate-900" id="stat-orders-count">0</div>
+            <div class="text-xs text-slate-500 font-medium">Всего заказов</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-slate-900" id="stat-visits-count">1,482</div>
+            <div class="text-xs text-slate-500 font-medium">Посещений сегодня</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Sub-tabs -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="border-b border-slate-200 flex bg-slate-50/50">
+          <button onclick="switchAdminSubTab('products')" id="admin-subtab-products" class="px-6 py-3.5 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
+            <i data-lucide="package" class="w-4 h-4"></i> Управление товарами
+          </button>
+          <button onclick="switchAdminSubTab('orders')" id="admin-subtab-orders" class="px-6 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-4 h-4"></i> Заказы
+          </button>
+          <button onclick="switchAdminSubTab('settings')" id="admin-subtab-settings" class="px-6 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+            <i data-lucide="sliders" class="w-4 h-4"></i> Настройки магазина
+          </button>
+          <button onclick="switchAdminSubTab('security')" id="admin-subtab-security" class="px-6 py-3.5 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2">
+            <i data-lucide="key" class="w-4 h-4"></i> Безопасность
+          </button>
+        </div>
+
+        <div class="p-6">
+          <div id="admin-view-products" class="space-y-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="pb-3 px-4">Товар</th>
+                    <th class="pb-3 px-4">Категория</th>
+                    <th class="pb-3 px-4">Цена</th>
+                    <th class="pb-3 px-4 text-right">Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-products-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="admin-view-orders" class="hidden space-y-4">
+            <div id="admin-orders-list" class="space-y-4"></div>
+          </div>
+
+          <div id="admin-view-settings" class="hidden max-w-2xl space-y-6">
+            <div class="space-y-4">
+              <h3 class="font-bold text-slate-900 border-b pb-2">Основные данные</h3>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Название магазина</label>
+                <input type="text" id="setting-store-name" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Описание магазина</label>
+                <textarea id="setting-store-desc" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Контакты (телефон)</label>
+                <input type="text" id="setting-store-phone" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Категории (через запятую)</label>
+                <input type="text" id="setting-store-categories" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              </div>
+              <button onclick="saveStoreSettings()" class="bg-indigo-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-indigo-700 transition">
+                Сохранить настройки
+              </button>
+            </div>
+          </div>
+
+          <div id="admin-view-security" class="hidden max-w-xl space-y-6">
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+              <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="shield" class="w-5 h-5 text-indigo-600"></i> Учётная запись Firebase
+              </h3>
+              <div class="text-sm text-slate-600 space-y-1">
+                <p><strong>Текущий статус:</strong> <span id="admin-status-text" class="text-rose-600 font-semibold">Не авторизован</span></p>
+                <p><strong>Email:</strong> <span id="admin-email-text">—</span></p>
+                <p><strong>Роль:</strong> Administrator (Firebase Auth)</p>
+              </div>
+              <hr class="border-slate-200">
+              <div>
+                <button onclick="logoutAdmin()" class="bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                  <i data-lucide="log-out" class="w-4 h-4"></i> Выйти из аккаунта
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY RULES VIEW -->
+    <div id="view-security" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Firebase Security Rules</h1>
+            <p class="text-sm text-slate-500">Правила безопасности для Firestore в вашей консоли Firebase.</p>
+          </div>
+          <button onclick="copyRules()" class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 transition flex items-center gap-2">
+            <i data-lucide="copy" class="w-4 h-4"></i> Скопировать правила
+          </button>
+        </div>
+        <pre class="bg-slate-950 text-indigo-300 p-5 rounded-2xl text-xs font-mono overflow-x-auto border border-slate-800 leading-relaxed" id="security-rules-code">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null;
+    }
+    match /products/{productId} {
+      allow read: if true;
+      allow write, update, delete: if isAdmin();
+    }
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
+        </pre>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: AUTH -->
+  <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-slate-100">
+      <button onclick="closeAuthModal()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-900">Вход в Firebase Auth</h2>
+        <p class="text-xs text-slate-500">Авторизация администратора в облачной базе</p>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Email администратора</label>
+          <input type="email" id="login-email" required placeholder="admin@kvars.kg" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Пароль</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-200">
+          Войти в панель
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT PRODUCT -->
+  <div id="modal-product" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <button onclick="closeProductModal()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <h2 id="modal-product-title" class="text-xl font-extrabold text-slate-900">Добавить товар</h2>
+      <form onsubmit="handleSaveProduct(event)" class="space-y-4">
+        <input type="hidden" id="prod-id">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Название товара</label>
+          <input type="text" id="prod-name" required placeholder="Xiaomi 13 Pro" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Цена (сом)</label>
+            <input type="number" id="prod-price" required placeholder="52000" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Категория</label>
+            <select id="prod-category" class="w-full border border-slate-200 rounded-xl px-3 py-
